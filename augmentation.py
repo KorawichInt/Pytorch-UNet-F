@@ -20,7 +20,7 @@ def augmentation(input_path, filename, output_path):
     image_path = os.path.join(input_path, filename)
     image = Image.open(image_path)
     ### Augmentation
-    croped_img = v2.RandomCrop(size=(224, 224))(image)
+    # croped_img = v2.RandomCrop(size=(224, 224))(image)
     blured_img = v2.GaussianBlur(kernel_size=9, sigma=(0.8, 1.2))(image)
     brightnessed_img = v2.ColorJitter(brightness=(1.1,1.5))(image)
     darknessed_img = v2.ColorJitter(brightness=(0.6,0.9))(image)
@@ -29,7 +29,7 @@ def augmentation(input_path, filename, output_path):
     split_filename = filename.split('.')
     name = split_filename[0]
     surname = split_filename[1]
-    croped_img.save(os.path.join(output_path, f'{name}_cropped.{surname}'))
+    # croped_img.save(os.path.join(output_path, f'{name}_cropped.{surname}'))
     blured_img.save(os.path.join(output_path, f'{name}_blurred.{surname}'))
     brightnessed_img.save(os.path.join(output_path, f'{name}_brightnessed.{surname}'))
     darknessed_img.save(os.path.join(output_path, f'{name}_darknessed.{surname}'))
