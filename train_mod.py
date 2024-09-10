@@ -21,9 +21,9 @@ from utils.dice_score import dice_loss
 from time import time
 import pandas as pd
 
-dir_img = Path('./dataset/images/')
-dir_mask = Path('./dataset/masks/')
-dir_checkpoint = Path('./checkpoints/')
+# dir_img = Path('./dataset/images/')
+# dir_mask = Path('./dataset/masks/')
+# dir_checkpoint = Path('./checkpoints/')
 
 
 def train_model(
@@ -205,6 +205,7 @@ def get_args():
     parser.add_argument('--amp', action='store_true', default=False, help='Use mixed precision')
     parser.add_argument('--bilinear', action='store_true', default=False, help='Use bilinear upsampling')
     parser.add_argument('--classes', '-c', type=int, default=2, help='Number of classes')
+    parser.add_argument('--augment', '-a', type=int, default=False, help='Normal dataset or augment dataset')
 
     return parser.parse_args()
 
@@ -213,8 +214,18 @@ if __name__ == '__main__':
     start_time = time()
     args = get_args()
 
+    if args.augment == False:
+        dir_img = Path('./dataset/images/')
+        dir_mask = Path('./dataset/masks/')
+        dir_checkpoint = Path('./checkpoints/')
+    elif args.augment == True:
+        dir_img = Path('./dataset/images_augment/')
+        dir_mask = Path('./dataset/masks_augment/')
+        dir_checkpoint = Path('./checkpoints/')
+
     logging.basicConfig(level=logging.INFO, format='%(levelname)s: %(message)s')
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+    logging.info(f'Select model {args.model}')
     logging.info(f'Using device {device}')
 
     # Change here to adapt to your data
