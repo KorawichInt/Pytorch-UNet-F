@@ -43,8 +43,10 @@ def train_model(
     # 1. Create dataset
     try:
         dataset = CarvanaDataset(dir_img, dir_mask, img_scale)
+        print("try -> CarvanaDataset")
     except (AssertionError, RuntimeError, IndexError):
         dataset = BasicDataset(dir_img, dir_mask, img_scale)
+        print("except -> BasicDataset")
 
     # 2. Split into train / validation partitions
     n_val = int(len(dataset) * val_percent)
@@ -84,15 +86,15 @@ def train_model(
     grad_scaler = torch.amp.GradScaler("cuda", enabled=amp)
     criterion = nn.CrossEntropyLoss() if model.n_classes > 1 else nn.BCEWithLogitsLoss()
     global_step = 0
+    epochs_list = []
+    train_loss_list = []
+    val_loss_list = []
+    lr_list = []
 
     # 5. Begin training
     for epoch in range(1, epochs + 1):
         model.train()
         epoch_loss = 0
-        epochs_list = []
-        train_loss_list = []
-        val_loss_list = []
-        lr_list = []
         with tqdm(total=n_train, desc=f'Epoch {epoch}/{epochs}', unit='img') as pbar:
             for batch in train_loader:
                 images, true_masks = batch['image'], batch['mask']
