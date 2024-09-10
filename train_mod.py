@@ -34,7 +34,7 @@ from sklearn.metrics import precision_recall_curve
 import matplotlib.pyplot as plt
 
 def plot_precision_recall_curve(true_masks, pred_probs, n_classes, epoch):
-    class_names = ['Background', 'Vegge', 'Meat', 'Carb']
+    class_names = ['Class 0', 'Class 1', 'Class 2', 'Class 3']
     # Concatenate all batches
     true_masks = np.concatenate(true_masks, axis=0)
     pred_probs = np.concatenate(pred_probs, axis=0)
@@ -115,8 +115,11 @@ def train_model(
     criterion = nn.CrossEntropyLoss() if model.n_classes > 1 else nn.BCEWithLogitsLoss()
     global_step = 0
     epochs_list = []
-    train_loss_list = []
-    val_dice_list = []
+    train_crossentropylosses = []
+    train_dice_scores = []
+    train_dice_losses = []
+    val_dice_scores = []
+    val_dice_losses = []
     lr_list = []
 
     # 5. Begin training
@@ -206,19 +209,26 @@ def train_model(
         
         
         # Replace the call to `evaluate` in your training script with this:
+        train_dice_score, _, _ = evaluate(model, train_loader, device, amp)
         val_dice_score, pred_probs, true_masks = evaluate(model, val_loader, device, amp)
         if epoch == epochs-1:
             plot_precision_recall_curve(true_masks, pred_probs, model.n_classes, epoch)
 
         epochs_list.append(epoch)
-        train_loss_list.append(round(epoch_loss, 6))
-        val_dice_list.append(round(val_dice_score.item(), 6))
+        train_crossentropylosses.append(round(epoch_loss, 6))
+        train_dice_scores.append(round(train_dice_score.item(), 6))
+        train_dice_losses.append(round(1-train_dice_score.item(), 6))
+        val_dice_scores.append(round(val_dice_score.item(), 6))
+        val_dice_losses.append(round(1-val_dice_score.item(), 6))
         lr_list.append(optimizer.param_groups[0]['lr'])
 
     result_dict = {
         'epochs' : epochs_list,
-        'train_loss' : train_loss_list,
-        'val_dice_score' : val_dice_list,
+        'train_crossentropyloss' : train_crossentropylosses,
+        'train_dice_score' : train_dice_scores,
+        'train_dice_loss' : train_dice_losses,
+        'val_dice_score' : val_dice_scores,
+        'val_dice_loss' : val_dice_losses,
         'lr' : lr_list
     }
     
