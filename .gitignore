@@ -10,3 +10,4 @@ venv/
 wandb/
 wandb/*
 *.csv
+unet_PR_curve.png
