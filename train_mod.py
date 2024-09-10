@@ -205,7 +205,7 @@ def get_args():
     parser.add_argument('--amp', action='store_true', default=False, help='Use mixed precision')
     parser.add_argument('--bilinear', action='store_true', default=False, help='Use bilinear upsampling')
     parser.add_argument('--classes', '-c', type=int, default=2, help='Number of classes')
-    parser.add_argument('--augment', '-a', type=int, default=False, help='Normal dataset or augment dataset')
+    parser.add_argument('--augment', '-a', action='store_true', default=False, help='Use augmented dataset')
 
     return parser.parse_args()
 
@@ -219,13 +219,13 @@ if __name__ == '__main__':
         dir_mask = Path('./dataset/masks/')
         dir_checkpoint = Path('./checkpoints/')
     elif args.augment == True:
-        dir_img = Path('./dataset/images_augment/')
-        dir_mask = Path('./dataset/masks_augment/')
+        dir_img = Path('./dataset_U2/images/')
+        dir_mask = Path('./dataset_U2/masks/')
         dir_checkpoint = Path('./checkpoints/')
 
     logging.basicConfig(level=logging.INFO, format='%(levelname)s: %(message)s')
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-    logging.info(f'Select model {args.model}')
+    logging.info(f'Augment data = {args.augment}')
     logging.info(f'Using device {device}')
 
     # Change here to adapt to your data
