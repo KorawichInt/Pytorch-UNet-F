@@ -21,9 +21,37 @@ from utils.dice_score import dice_loss
 from time import time
 import pandas as pd
 
+from sklearn.metrics import precision_recall_curve
+import matplotlib.pyplot as plt
+import numpy as np
+
 # dir_img = Path('./dataset/images/')
 # dir_mask = Path('./dataset/masks/')
 # dir_checkpoint = Path('./checkpoints/')
+
+import numpy as np
+from sklearn.metrics import precision_recall_curve
+import matplotlib.pyplot as plt
+
+def plot_precision_recall_curve(true_masks, pred_probs, n_classes, epoch):
+    class_names = ['Background', 'Vegge', 'Meat', 'Carb']
+    # Concatenate all batches
+    true_masks = np.concatenate(true_masks, axis=0)
+    pred_probs = np.concatenate(pred_probs, axis=0)
+
+    for i in range(n_classes):
+        # Calculate precision and recall for each class
+        precision, recall, _ = precision_recall_curve((true_masks == i).flatten(), pred_probs[:, i].flatten())
+
+        # Plot the precision-recall curve
+        plt.plot(recall, precision, label=class_names[i])
+
+    plt.xlabel('Recall')
+    plt.ylabel('Precision')
+    plt.title(f'Precision-Recall curve at epoch {epoch+1} (start at 1)')
+    plt.legend()
+    # plt.show()
+    plt.savefig('unet_PR_curve.png')
 
 
 def train_model(
@@ -88,7 +116,7 @@ def train_model(
     global_step = 0
     epochs_list = []
     train_loss_list = []
-    val_loss_list = []
+    val_dice_list = []
     lr_list = []
 
     # 5. Begin training
@@ -149,7 +177,7 @@ def train_model(
                             if not (torch.isinf(value.grad) | torch.isnan(value.grad)).any():
                                 histograms['Gradients/' + tag] = wandb.Histogram(value.grad.data.cpu())
 
-                        val_score = evaluate(model, val_loader, device, amp)
+                        val_score, _, _ = evaluate(model, val_loader, device, amp)
                         scheduler.step(val_score)
 
                         logging.info('Validation Dice score: {}'.format(val_score))
@@ -176,15 +204,21 @@ def train_model(
             torch.save(state_dict, str(dir_checkpoint / 'checkpoint_epoch{}.pth'.format(epoch)))
             logging.info(f'Checkpoint {epoch} saved!')
         
-        val_loss = evaluate(model, val_loader, device, amp)
+        
+        # Replace the call to `evaluate` in your training script with this:
+        val_dice_score, pred_probs, true_masks = evaluate(model, val_loader, device, amp)
+        if epoch == epochs-1:
+            plot_precision_recall_curve(true_masks, pred_probs, model.n_classes, epoch)
+
         epochs_list.append(epoch)
         train_loss_list.append(round(epoch_loss, 6))
-        val_loss_list.append(round(val_loss.item(), 6))
+        val_dice_list.append(round(val_dice_score.item(), 6))
         lr_list.append(optimizer.param_groups[0]['lr'])
+
     result_dict = {
         'epochs' : epochs_list,
         'train_loss' : train_loss_list,
-        'val_loss' : val_loss_list,
+        'val_dice_score' : val_dice_list,
         'lr' : lr_list
     }
     
