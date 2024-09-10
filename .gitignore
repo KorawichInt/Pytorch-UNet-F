@@ -3,9 +3,10 @@ data/
 __pycache__/
 checkpoints/
 *.pth
-*.jpg
+# *.jpg
+# *.png
 venv/
 .idea/
 wandb/
-*.png
+wandb/*
 *.csv
