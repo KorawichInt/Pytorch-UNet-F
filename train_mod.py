@@ -215,7 +215,7 @@ def train_model(
             plot_precision_recall_curve(true_masks, pred_probs, model.n_classes, epoch)
 
         epochs_list.append(epoch)
-        train_crossentropylosses.append(round(epoch_loss, 6))
+        train_crossentropylosses.append(round(epoch_loss/(n_train/batch_size), 6))
         train_dice_scores.append(round(train_dice_score.item(), 6))
         train_dice_losses.append(round(1-train_dice_score.item(), 6))
         val_dice_scores.append(round(val_dice_score.item(), 6))
